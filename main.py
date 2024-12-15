@@ -2,7 +2,6 @@
 
 from flask import Flask,request,jsonify
 from flask_cors import CORS
-import random
 
 # loading the data from the csv file to apandas dataframe
 
@@ -15,13 +14,13 @@ from recommend_normal import recommend_movies
 @app.route('/')
 
 def hello_world():
-    user_id = 'user1'  # You can assign a unique ID to each user
+ # You can assign a unique ID to each user
   
     return recommend_movieswithhistory(request.args.get('username'),request.args.get('movie'))
     
 @app.route('/des')
 def test():
-    user_id = 'user1'  # You can assign a unique ID to each user
+  # You can assign a unique ID to each user
     print(request.args.get('desc'))
     return recommend_movies_with_desc([request.args.get('desc')])
 @app.route('/search')
