@@ -15,3 +15,4 @@ venv/
 .env
 instance/
 *.sqlite3
+.vercel

@@ -4,12 +4,36 @@ import numpy as np
 import pandas as pd
 import os
 import difflib
-movies_data = pd.read_csv('./movieswithposter_updated.csv')
+
+from huggingface_hub import hf_hub_download
+
+repo_id = "Navanihk/recommendationsystemmovie"
+def load_data():
+    try:
+        
+        # Download the CSV file
+        csv_path = hf_hub_download(repo_id=repo_id, filename="movieswithposter_updated.csv")
+        
+        # Load as DataFrame
+        movies_data = pd.read_csv(csv_path)
+        return movies_data
+    except Exception as e:
+        print(f"Error loading data from Hugging Face: {e}")
+        # Fallback to local file if available
+        if os.path.exists('./movieswithposter_updated.csv'):
+            return pd.read_csv('./movieswithposter_updated.csv')
+        else:
+            raise
+
+# Load movie data
+movies_data = load_data()
+vectorizer_path = hf_hub_download(repo_id=repo_id, filename="feature_vector.pkl")
+similarity_path = hf_hub_download(repo_id=repo_id, filename="model_similarity.pkl")
 def recommend_movies(movie_name):
     # Add the movie to the user's history
-    if os.path.exists('model_vectorizer.pkl') and os.path.exists('model_similarity.pkl'):
+    if vectorizer_path and similarity_path:
     # Load the vectorizer and similarity matrix
-        with open('model_vectorizer.pkl', 'rb') as vec_file, open('model_similarity.pkl', 'rb') as sim_file:
+        with open(vectorizer_path, 'rb') as vec_file, open(similarity_path, 'rb') as sim_file:
             vectorizer = pickle.load(vec_file)
             similarity = pickle.load(sim_file)
 

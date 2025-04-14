@@ -2,8 +2,32 @@ import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import pandas as pd
-movies_data = pd.read_csv('./movieswithposter_updated.csv')
-with open('model_vectorizer.pkl', 'rb') as vec_file, open('model_similarity.pkl', 'rb') as sim_file:
+
+from huggingface_hub import hf_hub_download
+
+repo_id = "Navanihk/recommendationsystemmovie"
+def load_data():
+    try:
+        
+        # Download the CSV file
+        csv_path = hf_hub_download(repo_id=repo_id, filename="movieswithposter_updated.csv")
+        
+        # Load as DataFrame
+        movies_data = pd.read_csv(csv_path)
+        return movies_data
+    except Exception as e:
+        print(f"Error loading data from Hugging Face: {e}")
+        # Fallback to local file if available
+        if os.path.exists('./movieswithposter_updated.csv'):
+            return pd.read_csv('./movieswithposter_updated.csv')
+        else:
+            raise
+
+# Load movie data
+movies_data = load_data()
+model_vectorizer = hf_hub_download(repo_id=repo_id, filename="model_vectorizer.pkl")
+similarity_path = hf_hub_download(repo_id=repo_id, filename="model_similarity.pkl")
+with open(model_vectorizer, 'rb') as vec_file, open(similarity_path, 'rb') as sim_file:
         vectorizer = pickle.load(vec_file)
         similarity = pickle.load(sim_file)
 def recommend_movies_with_desc(query):

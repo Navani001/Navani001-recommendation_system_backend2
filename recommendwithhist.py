@@ -5,18 +5,21 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 import os
+
 import nltk
 nltk.download('punkt')
+
+from huggingface_hub import hf_hub_download
 nltk.download('punkt_tab')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
+repo_id = "Navanihk/recommendationsystemmovie"
 def stemmed_tokenizer(text):
     ps = PorterStemmer()
     words = word_tokenize(text)
     return [ps.stem(word) for word in words]
 # Initialize an empty dictionary to store user history
 user_history = {}
-
 # Function to save user history to a pickle file
 def save_user_history():
     with open('user_history.pkl', 'wb') as file:
@@ -30,7 +33,26 @@ def load_user_history():
             user_history = pickle.load(file)
 
 # Load movie data
-movies_data = pd.read_csv('./movieswithposter_updated.csv')
+# movies_data = pd.read_csv('./movieswithposter_updated.csv')
+def load_data():
+    try:
+        
+        # Download the CSV file
+        csv_path = hf_hub_download(repo_id=repo_id, filename="movieswithposter_updated.csv")
+        
+        # Load as DataFrame
+        movies_data = pd.read_csv(csv_path)
+        return movies_data
+    except Exception as e:
+        print(f"Error loading data from Hugging Face: {e}")
+        # Fallback to local file if available
+        if os.path.exists('./movieswithposter_updated.csv'):
+            return pd.read_csv('./movieswithposter_updated.csv')
+        else:
+            raise
+
+# Load movie data
+movies_data = load_data()
 
 # Pre-process data
 selected_features = ['genres', 'keywords', 'tagline', 'cast', 'director']
@@ -39,11 +61,12 @@ for feature in selected_features:
 
 # Combine features
 combined_features = movies_data['genres'] + ' ' + movies_data['keywords'] + ' ' + movies_data['tagline'] + ' ' + movies_data['cast'] + ' ' + movies_data['director']
-
+model_vectorizer = hf_hub_download(repo_id=repo_id, filename="model_vectorizer.pkl")
+similarity_path = hf_hub_download(repo_id=repo_id, filename="model_similarity.pkl")
 # Check if the model (vectorizer and similarity) exists
-if os.path.exists('model_vectorizer.pkl') and os.path.exists('model_similarity.pkl'):
+if model_vectorizer and similarity_path:
     # Load the vectorizer and similarity matrix
-    with open('model_vectorizer.pkl', 'rb') as vec_file, open('model_similarity.pkl', 'rb') as sim_file:
+    with open(model_vectorizer, 'rb') as vec_file, open(similarity_path, 'rb') as sim_file:
         vectorizer = pickle.load(vec_file)
         similarity = pickle.load(sim_file)
 else:

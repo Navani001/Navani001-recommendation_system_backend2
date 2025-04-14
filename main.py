@@ -5,6 +5,7 @@ from flask_cors import CORS
 
 # loading the data from the csv file to apandas dataframe
 
+
 app = Flask(__name__)
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 from recommendwithhist import recommend_movieswithhistory
